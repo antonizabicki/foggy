@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoGGy // SYSTEM_INIT</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 546 381'%3E%3Cpath fill='%23feed01' d='M0,108.86l54.6,54.43H0v217.71h54.6v-217.71l54.6,54.43h109.29v-54.43H54.6V54.43h436.8v108.86h-163.89v54.43h109.29l54.6-54.43v217.71h54.6v-217.71h-54.6l54.6-54.43v-54.43L491.4,0H54.6L0,54.43v54.43Z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/lenis@latest/dist/lenis.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #030303;
+            --text-main: #f0f0f0;
+            --text-muted: #666666;
+            --marathon-yellow: #feed01; 
+            --font-display: 'Syncopate', sans-serif;
+            --font-tech: 'Space Mono', monospace;
+            --border-thin: 1px solid #333;
+            --border-thick: 4px solid var(--marathon-yellow);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { overflow-x: hidden; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-tech);
+            line-height: 1.5;
+            text-transform: uppercase;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 0; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--marathon-yellow); }
+
+        body::before {
+            content: ""; position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2; pointer-events: none;
+        }
+
+        body::after {
+            content: " "; display: block; position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
+            z-index: 999; background-size: 100% 4px;
+            pointer-events: none; opacity: 0.6;
+        }
+
+        ::selection { background: var(--marathon-yellow); color: #000; }
+
+        @media (pointer: fine) {
+            body, a, button, .snappy { cursor: none !important; }
+            
+            .custom-cursor {
+                position: fixed; top: 0; left: 0;
+                pointer-events: none; z-index: 10000;
+                display: flex; justify-content: center; align-items: center;
+                transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                            height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            
+            .custom-cursor::before {
+                content: ""; position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                border: 2px solid var(--marathon-yellow);
+                background: rgba(254, 237, 1, 0.1);
+                border-radius: 50%; transition: all 0.3s ease;
+            }
+
+            .cursor-corner {
+                position: absolute; width: 8px; height: 8px; 
+                border: 2px solid var(--marathon-yellow); 
+                opacity: 0; transition: opacity 0.2s;
+            }
+            .cursor-corner.tl { top: -4px; left: -4px; border-right: none; border-bottom: none; }
+            .cursor-corner.tr { top: -4px; right: -4px; border-left: none; border-bottom: none; }
+            .cursor-corner.bl { bottom: -4px; left: -4px; border-right: none; border-top: none; }
+            .cursor-corner.br { bottom: -4px; right: -4px; border-left: none; border-top: none; }
+
+            .custom-cursor.cursor-snappy::before { opacity: 0; transform: scale(0.5); }
+            .custom-cursor.cursor-snappy .cursor-corner { opacity: 1; }
+            .custom-cursor.cursor-snappy { background: rgba(254, 237, 1, 0.05); }
+
+            .custom-cursor.cursor-scan::before {
+                border-radius: 0; background: transparent;
+                border: 1px dashed var(--marathon-yellow);
+                animation: spin 4s linear infinite;
+            }
+            .custom-cursor.cursor-scan .cursor-label::after {
+                content: "[ SYS_DATA ]"; position: absolute;
+                bottom: -25px; left: 50%; transform: translateX(-50%);
+                font-size: 10px; color: var(--marathon-yellow);
+                white-space: nowrap; font-family: var(--font-tech);
+            }
+
+            .custom-cursor.cursor-warning::before {
+                border-color: #ff3333; background: rgba(255, 51, 51, 0.1);
+                border-radius: 0; transform: rotate(45deg);
+            }
+            .custom-cursor.cursor-warning .cursor-label::after {
+                content: "[ WARNING ]"; position: absolute;
+                bottom: -25px; left: 50%; transform: translateX(-50%);
+                font-size: 10px; color: #ff3333; font-weight: bold;
+                white-space: nowrap; font-family: var(--font-tech);
+            }
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .crosshair { position: absolute; width: 15px; height: 15px; }
+        .crosshair::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--marathon-yellow); }
+        .crosshair::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: var(--marathon-yellow); }
+        
+        .tech-data { 
+            font-size: clamp(0.75rem, 1vw, 0.9rem); 
+            color: var(--text-muted); letter-spacing: 2px; 
+            display: flex; gap: 10px 20px; flex-wrap: wrap; 
+        }
+        .tech-data span { color: var(--marathon-yellow); }
+
+        .hud-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            border-bottom: var(--border-thin); display: flex; justify-content: space-between; align-items: center;
+            padding: 0 30px; background: rgba(3, 3, 3, 0.85);
+            backdrop-filter: blur(8px); z-index: 100;
+        }
+        .hud-nav .small-logo svg { height: 30px; fill: var(--marathon-yellow); }
+        .hud-links { display: flex; gap: 30px; font-size: 0.8rem; }
+        .hud-links a { color: var(--text-main); text-decoration: none; padding: 5px; }
+        .hud-links a:hover { color: var(--marathon-yellow); }
+
+        .side-data {
+            position: fixed; right: 0; top: 60px; height: calc(100vh - 60px); width: 50px;
+            border-left: var(--border-thin); display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+            padding: 20px 0; z-index: 90; background: #000;
+        }
+        .vertical-text { writing-mode: vertical-rl; font-size: 0.7rem; color: var(--text-muted); letter-spacing: 4px; }
+        .status-dot { width: 10px; height: 10px; background: var(--marathon-yellow); animation: blink 2s infinite; }
+
+        .hero {
+            min-height: 100vh; padding: 120px 70px 50px 50px; 
+            display: flex; flex-direction: column; justify-content: center; position: relative;
+            background: radial-gradient(circle at center, rgba(254, 237, 1, 0.05) 0%, transparent 50%);
+            overflow: hidden;
+            width: 100%;
+        }
+        .main-logo-container { width: 100%; max-width: 900px; margin-bottom: 20px; position: relative; display: inline-block; padding: 10px; }
+        .main-logo-container svg { width: 100%; max-width: 100%; height: auto; fill: var(--marathon-yellow); filter: drop-shadow(0 0 10px rgba(254, 237, 1, 0.3)); display: block; }
+        .hero-sub { font-family: var(--font-display); font-size: clamp(1.2rem, 4vw, 3.5rem); color: var(--text-main); border-left: var(--border-thick); padding-left: 20px; margin-top: 30px; line-height: 1.2; word-wrap: break-word; }
+
+        section { padding: 100px 80px 100px 50px; position: relative; border-top: var(--border-thin); width: 100%; overflow: hidden; }
+        .section-header { display: flex; align-items: flex-end; margin-bottom: 50px; gap: 20px; }
+        .section-title { font-family: var(--font-display); font-size: clamp(2rem, 6vw, 4rem); color: var(--marathon-yellow); line-height: 0.8; letter-spacing: -2px; }
+        .section-id { font-size: 1rem; color: var(--text-muted); margin-bottom: 5px; }
+        .grid-split { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; position: relative; width: 100%; }
+
+        .img-wrapper { position: relative; border: 1px solid #333; padding: 10px; width: 100%; height: 100%; display: flex; align-items: stretch; }
+        .img-wrapper img {
+            width: 100%; height: 100%; object-fit: cover; display: block; max-width: 100%;
+            filter: grayscale(100%) contrast(1.2) brightness(0.7);
+            transition: filter 0.8s ease-in-out; 
+        }
+        .img-wrapper:hover img { filter: grayscale(100%) contrast(1.5) sepia(100%) hue-rotate(20deg) saturate(300%) brightness(0.9); }
+        
+        .corner { position: absolute; width: 15px; height: 15px; border: 2px solid var(--marathon-yellow); }
+        .corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+        .corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+        .corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        .text-block { 
+            background: #0a0a0a; padding: 40px; border-left: 1px solid #333; position: relative; width: 100%; 
+            word-break: break-word; display: flex; flex-direction: column; justify-content: center; 
+        }
+        .text-block p { font-size: clamp(1.1rem, 1.3vw + 0.5rem, 1.35rem); line-height: 1.7; margin-bottom: 25px; color: #ccc; }
+        .text-block h3 { font-size: clamp(1.2rem, 1.5vw + 0.5rem, 1.5rem); margin: 30px 0 15px 0; color: #fff; }
+        .highlight-yellow { color: var(--marathon-yellow); font-weight: bold; }
+
+        .hover-word {
+            display: inline-block;
+            transition: color 0.15s ease, text-shadow 0.15s ease;
+        }
+        .hover-word:hover {
+            color: var(--marathon-yellow);
+            text-shadow: 0 0 8px rgba(254, 237, 1, 0.4);
+        }
+
+        ul.data-list { list-style: none; }
+        ul.data-list li { position: relative; padding-left: 30px; margin-bottom: 15px; font-size: clamp(1.05rem, 1.2vw + 0.5rem, 1.25rem); color: #aaa; line-height: 1.6; }
+        ul.data-list li::before { content: '>'; position: absolute; left: 0; color: var(--marathon-yellow); font-weight: bold; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #333; border: 1px solid #333; width: 100%; }
+        .stat-item { background: var(--bg-color); padding: 40px 20px; text-align: center; position: relative; }
+        .stat-item:hover { background: #0a0a0a; }
+        .stat-num { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); color: var(--text-main); }
+        .stat-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; }
+
+        .b2b-alert { border: 1px solid var(--marathon-yellow); background: rgba(254, 237, 1, 0.05); padding: 25px; margin-bottom: 30px; width: 100%; font-size: clamp(1.05rem, 1.2vw + 0.5rem, 1.25rem); line-height: 1.6; }
+
+        footer { border-top: 5px solid var(--marathon-yellow); padding: 100px 50px; text-align: center; background: #050505; position: relative; width: 100%; overflow: hidden; }
+        .footer-title { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem); color: var(--text-main); margin-bottom: 50px; }
+        .big-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; width: 100%; }
+        .big-links a { padding: 15px 30px; border: 1px solid #333; color: var(--text-main); text-decoration: none; transition: all 0.3s; display: inline-block; }
+        .big-links a:hover { border-color: var(--marathon-yellow); background: var(--marathon-yellow); color: #000; font-weight: bold; }
+
+        @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+        .reveal { opacity: 0; transform: translateY(50px); transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .custom-context-menu {
+            position: fixed;
+            background-color: #0a0a0a; /* <-- TŁO MENU (teraz ciemne) */
+            border: 1px solid #333; /* Subtelna ramka wokół */
+            color: var(--text-main);
+            border-radius: 10px; /* Nieco ostrzejsze rogi w stylu gry */
+            padding: 15px 0;
+            min-width: 220px;
+            z-index: 100000;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            font-family: var(--font-tech); /* Zmiana na techniczny font */
+            font-weight: 700;
+            text-transform: lowercase;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        .custom-context-menu.show {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+        .custom-context-menu::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: -6px;
+            width: 12px;
+            height: 12px;
+            background: var(--marathon-yellow); /* <-- KROPKA (teraz żółta) */
+            border-radius: 50%;
+        }
+        .custom-context-menu a {
+            display: block;
+            padding: 12px 25px;
+            color: #ccc; /* <-- KOLOR TEKSTU */
+            text-decoration: none;
+            font-size: 0.95rem;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .custom-context-menu a:hover {
+            background-color: #111; /* <-- TŁO PO NAJECHANIU MYSZKĄ */
+            color: var(--marathon-yellow); /* <-- TEKST PO NAJECHANIU (żółty) */
+            padding-left: 35px; /* Fajny efekt przesunięcia tekstu */
+        }
+        .custom-context-menu a:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 25px;
+            right: 25px;
+            height: 1px;
+            background-color: #222; /* <-- KOLOR LINII ODDZIELAJĄCEJ */
+        }
+
+        @media(max-width: 1024px) {
+            .grid-split { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+        
+        @media(max-width: 768px) {
+            .side-data { display: none; }
+            section, footer { padding: 80px 20px 80px 20px; }
+            .hero { padding: 120px 20px 60px 20px; }
+            .hud-nav { padding: 0 15px; }
+            .hud-links { display: none; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .big-links a { width: 100%; text-align: center; }
+            .text-block { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor" class="custom-cursor">
+        <div class="cursor-corner tl"></div>
+        <div class="cursor-corner tr"></div>
+        <div class="cursor-corner bl"></div>
+        <div class="cursor-corner br"></div>
+        <div class="cursor-label"></div>
+    </div>
+
+   <div id="custom-context-menu" class="custom-context-menu">
+        <a href="https://www.facebook.com/DJ.FoGGy.Official" target="_blank">facebook</a>
+        <a href="https://www.instagram.com/foggy_dj" target="_blank">ig foggy</a>
+        <a href="https://www.instagram.com/eligucio_blog" target="_blank">ig eligucio</a>
+        <a href="https://www.youtube.com/@foggy_dj" target="_blank">youtube</a>
+        <a href="https://www.tiktok.com/@foggy_dj" target="_blank">tiktok</a>
+        <a href="https://soundcloud.com/foggy_dj" target="_blank">soundcloud</a>
+    </div>
+
+    <nav class="hud-nav">
+        <a href="#" class="small-logo snappy">
+            <svg viewBox="0 0 546 381">
+                <path d="M0,108.86l54.6,54.43H0v217.71h54.6v-217.71l54.6,54.43h109.29v-54.43H54.6V54.43h436.8v108.86h-163.89v54.43h109.29l54.6-54.43v217.71h54.6v-217.71h-54.6l54.6-54.43v-54.43L491.4,0H54.6L0,54.43v54.43Z"/>
+            </svg>
+        </a>
+        <div class="tech-data">
+            <div>SYS.VER <span>1.0.5</span></div>
+            <div class="status-dot"></div>
+        </div>
+        <div class="hud-links">
+            <a href="https://www.instagram.com/foggy_dj" target="_blank" class="snappy">INSTAGRAM</a>
+            <a href="https://www.tiktok.com/@foggy_dj" target="_blank" class="snappy">TIKTOK</a>
+            <a href="https://www.youtube.com/@foggy_dj" target="_blank" class="snappy">YOUTUBE</a>
+            <a href="mailto:foggydjcontact@gmail.com" class="snappy">COMMS</a>
+        </div>
+    </nav>
+
+    <div class="side-data">
+        <div class="crosshair" style="top: 20px;"></div>
+        <div class="vertical-text">BALCONYBOY // DATA STREAM // ACTIVE</div>
+        <div class="vertical-text" style="color: var(--marathon-yellow);">FOGGY</div>
+    </div>
+
+    <main id="main-content">
+        <header class="hero" data-cursor="cursor-default">
+            <div class="crosshair" style="top: 20%; right: 10%;"></div>
+            <div class="crosshair" style="bottom: 10%; left: 5%;"></div>
+            
+            <div class="tech-data" style="margin-bottom: 10px;">
+                INITIATING <span>MAIN SEQUENCE</span>
+            </div>
+            
+            <div class="main-logo-container snappy">
+                <svg viewBox="0 0 1000.13 346.13">
+                    <polygon points="76.92 153.99 153.91 153.99 153.91 115.53 38.46 115.53 76.92 153.99"/>
+                    <polygon points="192.3 38.61 192.3 .15 38.46 .15 0 38.61 0 77.07 38.46 115.53 38.46 38.61 192.3 38.61"/>
+                    <rect y="115.53" width="38.46" height="153.84"/>
+                    <path d="M211.6,77.4l-38.46,38.46v115.38l38.46,38.46h115.38l38.46-38.46v-115.38l-38.46-38.46h-115.38ZM326.98,231.25h-115.38v-115.38h115.38v115.38Z"/>
+                    <polygon points="461.59 115.38 461.59 153.84 538.52 153.84 500.06 115.38 461.59 115.38"/>
+                    <polygon points="423.13 0 384.67 38.46 384.67 230.77 423.13 269.23 538.52 269.23 576.98 230.77 576.98 192.3 538.52 153.84 538.52 230.77 423.13 230.77 423.13 38.46 538.52 38.46 538.52 76.92 576.98 76.92 576.98 38.46 538.52 0 423.13 0"/>
+                    <polygon points="634.67 0 596.21 38.46 596.21 230.77 634.67 269.23 750.05 269.23 788.51 230.77 788.51 192.3 750.05 153.84 750.05 230.77 634.67 230.77 634.67 38.46 750.05 38.46 750.05 76.92 788.51 76.92 788.51 38.46 750.05 0 634.67 0"/>
+                    <polygon points="673.13 115.38 673.13 153.84 750.05 153.84 711.59 115.38 673.13 115.38"/>
+                    <rect x="961.67" y="76.9" width="38.46" height="192.3"/>
+                    <polygon points="846.29 230.75 884.75 269.21 961.67 269.21 923.21 230.75 846.29 230.75"/>
+                    <polygon points="807.83 307.67 807.83 346.13 961.67 346.13 1000.13 307.67 961.67 269.21 961.67 307.67 807.83 307.67"/>
+                    <polygon points="807.83 76.9 807.83 192.29 846.29 230.75 846.29 76.9 807.83 76.9"/>
+                </svg>
+            </div>
+
+            <div class="hero-sub">
+                GUSTAW JEZIERSKI <br>
+                <span style="color: var(--text-muted); font-size: 0.6em; font-family: var(--font-tech);">#BALCONYBOY_PROTOCOL</span>
+            </div>
+        </header>
+
+        <section class="reveal" data-cursor="cursor-scan">
+            <div class="section-header">
+                <div class="section-id">01.</div>
+                <h2 class="section-title"><span class="matrix-text" data-value="O MNIE">O MNIE</span></h2>
+            </div>
+            <div class="grid-split">
+                <div class="text-block">
+                    <div class="tech-data" style="margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                        OPERATIVE: <span>GUSTAW JEZIERSKI</span> LOC: <span>RADOM, PL</span> AGE: <span>21</span>
+                    </div>
+                    <p>Cześć! Studiuję Zarządzanie, a od 2020 roku moją największą pasją jest muzyka i branża <span class="highlight-yellow">DJ TechStruction</span>.</p>
+                    <p>Lubię grać w nietypowych przestrzeniach publicznych – tam, gdzie nikt nie spodziewa się DJ-a. Chcę rozszerzyć świadomość Polaków na temat muzyki elektronicznej, a czym to robić lepiej, niż unikalnym i zaskakującym typem show?</p>
+                    
+                    <div class="b2b-alert snappy" style="margin-top: 20px;">
+                        <span style="color: var(--text-muted); font-size: 0.9em; display: block; margin-bottom: 10px;">WIZJA 2025 // OVERRIDE</span>
+                        FoGGy planuje zagrać w największych miastach w Polsce na Balkonach. Przygotowane zaplecze sprzętowe, zespół designerów-techników, plan występów oraz pasja do tworzenia SHOW.
+                    </div>
+                </div>
+                <div class="img-wrapper snappy">
+                    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+                    <img src="zdj-bio.jpg" alt="Gustaw FoGGy Jezierski">
+                    <div class="crosshair" style="top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.5;"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="reveal" data-cursor="cursor-default">
+            <div class="section-header">
+                <div class="section-id">02.</div>
+                <h2 class="section-title"><span class="matrix-text" data-value="PROJEKT //">PROJEKT //</span><br><span class="matrix-text" data-value="BALCONY BOY">BALCONY BOY</span></h2>
+            </div>
+            <div class="grid-split">
+                <div class="img-wrapper snappy">
+                    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+                    <img src="zdj-akcja1.jpg" alt="Projekt Balcony Boy">
+                </div>
+                <div class="text-block">
+                    <p>Projekt <span class="highlight-yellow">#BalconyBoy</span> to unikalne, miejskie show DJ-skie grane z balkonów i nietypowych lokalizacji w miastach Polski. Łączy muzykę elektroniczną z miejskim klimatem, tworząc niezapomniane wizualne i dźwiękowe doświadczenie.</p>
+                    <p style="color: var(--text-muted);">ZANOTOWANE STREFY ZAKOŃCZONYCH OPERACJI:<br> 
+                    <span class="highlight-yellow">RADOM, KIELCE, CZĘSTOCHOWA, LUBLIN.</span></p>
+                    
+                    <ul class="data-list" style="margin-top: 30px;">
+                        <li>Zabezpieczone lokalizacje w wielu polskich miastach</li>
+                        <li>Sprzęt muzyczny dostosowany do kompaktowych przestrzeni</li>
+                        <li>Technik na miejscu do obsługi wydarzenia</li>
+                        <li>Designerzy odpowiedzialni za identyfikację wizualną</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="reveal" data-cursor="cursor-warning">
+            <div class="section-header">
+                <div class="section-id">03.</div>
+                <h2 class="section-title"><span class="matrix-text" data-value="TELEMETRIA">TELEMETRIA</span></h2>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item snappy">
+                    <div class="stat-num">1M+</div>
+                    <div class="stat-desc">WYŚWIETLEŃ (23/24) #BALCONYBOY</div>
+                </div>
+                <div class="stat-item snappy">
+                    <div class="stat-num">500K+</div>
+                    <div class="stat-desc">ZASIĘGU ORGANICZNEGO W SOCIALACH</div>
+                </div>
+                <div class="stat-item snappy">
+                    <div class="stat-num">4M+</div>
+                    <div class="stat-desc">WYŚWIETLEŃ NA RYNKU PERSKIM (@eligucio_blog_)</div>
+                </div>
+                <div class="stat-item snappy">
+                    <div class="stat-num">9K+</div>
+                    <div class="stat-desc">FOLLOWERSÓW ZBUDOWANYCH OD ZERA (1 ROK)</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="reveal" data-cursor="cursor-scan">
+            <div class="section-header">
+                <div class="section-id">04.</div>
+                <h2 class="section-title"><span class="matrix-text" data-value="B2B / LOGISTYKA">B2B / LOGISTYKA</span></h2>
+            </div>
+            <div class="grid-split">
+                <div class="text-block">
+                    <div class="b2b-alert snappy">
+                        Szukam partnera, który wesprze mój projekt finansowo i wizerunkowo. Projekt rusza latem 2025.
+                    </div>
+                    
+                    <h3>WYMAGANE WSPARCIE:</h3>
+                    <ul class="data-list" style="margin-bottom: 30px;">
+                        <li>Transport (Radom -> inne miasta, przewóz sprzętu)</li>
+                        <li>Noclegi i ewentualne koszty lokalne</li>
+                        <li>Produkcja materiałów audiowizualnych</li>
+                        <li>Produkty promocyjne z brandingiem partnera</li>
+                    </ul>
+
+                    <h3 style="color: var(--marathon-yellow);">WYMIANA / OFERTA:</h3>
+                    <ul class="data-list">
+                        <li>Interaktywne działania z publiką</li>
+                        <li>Promocja partnera w moich kanałach (+ rynek perski)</li>
+                        <li>Logo w materiałach wideo, serii #Weekly i na stronie</li>
+                        <li>Dedykowane nagrania/showcase z oznaczeniami partnera</li>
+                    </ul>
+                </div>
+                <div class="img-wrapper snappy">
+                    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+                    <img src="zdj-akcja2.jpg" alt="Tłum i akcja DJ">
+                </div>
+            </div>
+        </section>
+
+        <footer class="reveal" data-cursor="cursor-default">
+            <div class="crosshair" style="top: 20px; left: 20px;"></div>
+            <div class="crosshair" style="top: 20px; right: 20px;"></div>
+            
+            <h2 class="footer-title">ZBUDUJMY TO RAZEM</h2>
+            
+            <div class="big-links">
+                <a href="https://www.facebook.com/DJ.FoGGy.Official" target="_blank" class="snappy">FACEBOOK</a>
+                <a href="https://www.instagram.com/foggy_dj" target="_blank" class="snappy">IG FOGGY</a>
+                <a href="https://www.instagram.com/eligucio_blog_/" target="_blank" class="snappy">IG ELIGUCIO</a>
+                <a href="https://www.youtube.com/@foggy_dj" target="_blank" class="snappy">YOUTUBE</a>
+                <a href="https://www.tiktok.com/@foggy_dj" target="_blank" class="snappy">TIKTOK</a>
+                <a href="https://soundcloud.com/foggy_dj" target="_blank" class="snappy">SOUNDCLOUD</a>
+            </div>
+            
+            <div style="margin-top: 80px; font-size: 0.9rem; color: var(--text-muted); border-top: 1px solid #222; padding-top: 20px;">
+                SECURE COMMS: <a href="mailto:foggydjcontact@gmail.com" style="color: var(--marathon-yellow); text-decoration: none;" class="snappy">FOGGYDJCONTACT@GMAIL.COM</a>
+                <br><br>
+                // END OF TRANSMISSION //
+                <br><br>
+                <a href="https://witrynaodzera.pl" target="_blank" class="snappy" style="color: var(--text-muted); text-decoration: none; font-size: 0.75rem; letter-spacing: 2px; transition: color 0.3s ease;" onmouseover="this.style.color='var(--marathon-yellow)'" onmouseout="this.style.color='var(--text-muted)'">
+                    /// © 2026 WITRYNAODZERA™ ///
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        document.querySelectorAll('.text-block p, .data-list li').forEach(el => {
+            let newHtml = '';
+            el.childNodes.forEach(node => {
+                if(node.nodeType === 3) {
+                    let words = node.nodeValue.split(/\s+/);
+                    words.forEach(w => {
+                        if(w.trim() !== '') newHtml += `<span class="hover-word">${w}</span> `;
+                        else newHtml += ' ';
+                    });
+                } else {
+                    newHtml += node.outerHTML; 
+                }
+            });
+            el.innerHTML = newHtml;
+        });
+
+        const matrixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
+        document.querySelectorAll('.matrix-text').forEach(el => {
+            el.addEventListener('mouseenter', e => {
+                let iterations = 0;
+                const originalText = e.target.dataset.value;
+                clearInterval(e.target.matrixInterval);
+                
+                e.target.matrixInterval = setInterval(() => {
+                    e.target.innerText = originalText.split('')
+                        .map((letter, index) => {
+                            if(index < iterations) return originalText[index];
+                            if(originalText[index] === ' ') return ' ';
+                            return matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                        }).join('');
+                    
+                    if(iterations >= originalText.length) {
+                        clearInterval(e.target.matrixInterval);
+                        e.target.innerText = originalText;
+                    }
+                    iterations += 0.5;
+                }, 30);
+            });
+        });
+
+        const contextMenu = document.getElementById('custom-context-menu');
+        
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            contextMenu.classList.add('show');
+            
+            let x = e.clientX;
+            let y = e.clientY;
+            
+            if (x + contextMenu.offsetWidth > window.innerWidth) {
+                x = window.innerWidth - contextMenu.offsetWidth - 10;
+            }
+            if (y + contextMenu.offsetHeight > window.innerHeight) {
+                y = window.innerHeight - contextMenu.offsetHeight - 10;
+            }
+            
+            contextMenu.style.left = `${x}px`;
+            contextMenu.style.top = `${y}px`;
+        });
+
+        document.addEventListener('click', e => {
+            if(e.button !== 2) {
+                contextMenu.classList.remove('show');
+                setTimeout(() => {
+                    if(!contextMenu.classList.contains('show')) {
+                        contextMenu.style.display = 'none';
+                        contextMenu.style.display = 'block'; 
+                    }
+                }, 150);
+            }
+        });
+
+        if (window.innerWidth > 768) {
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                smooth: true,
+                smoothTouch: false
+            });
+
+            lenis.on('scroll', reveal);
+
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+        } else {
+            window.addEventListener('scroll', reveal);
+        }
+
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                if (elementTop < windowHeight - 100) reveals[i].classList.add("active");
+            }
+        }
+        reveal();
+
+        if (window.matchMedia("(pointer: fine)").matches && window.innerWidth > 768) {
+            const cursor = document.getElementById('custom-cursor');
+            let mouseX = window.innerWidth / 2;
+            let mouseY = window.innerHeight / 2;
+            let cursorX = mouseX;
+            let cursorY = mouseY;
+            
+            let isSnapped = false;
+            let snappedElement = null;
+
+            function animateCursor() {
+                if (!isSnapped) {
+                    cursorX += (mouseX - cursorX) * 0.2;
+                    cursorY += (mouseY - cursorY) * 0.2;
+                    cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
+                    cursor.style.width = '20px';
+                    cursor.style.height = '20px';
+                } else if (snappedElement) {
+                    const rect = snappedElement.getBoundingClientRect();
+                    const targetX = rect.left + rect.width / 2;
+                    const targetY = rect.top + rect.height / 2;
+                    
+                    cursorX += (targetX - cursorX) * 0.4;
+                    cursorY += (targetY - cursorY) * 0.4;
+                    cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
+                    
+                    cursor.style.width = `${rect.width + 16}px`;
+                    cursor.style.height = `${rect.height + 16}px`;
+                }
+                requestAnimationFrame(animateCursor);
+            }
+            animateCursor();
+
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+
+                if (!isSnapped) {
+                    const section = e.target.closest('section, header, footer');
+                    if (section && section.dataset.cursor) {
+                        cursor.className = `custom-cursor ${section.dataset.cursor}`;
+                    } else {
+                        cursor.className = 'custom-cursor cursor-default';
+                    }
+                }
+            });
+
+            const snappables = document.querySelectorAll('.snappy');
+            snappables.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    isSnapped = true;
+                    snappedElement = el;
+                    cursor.className = 'custom-cursor cursor-snappy';
+                });
+                
+                el.addEventListener('mouseleave', () => {
+                    isSnapped = false;
+                    snappedElement = null;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
