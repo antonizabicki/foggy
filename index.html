@@ -60,6 +60,20 @@
             pointer-events: none; opacity: 0.6;
         }
 
+        /* Ekran ładowania (Preloader) */
+        #preloader {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-color); z-index: 999999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.3s ease;
+        }
+        .preloader-logo { width: 80px; height: 55px; position: relative; margin-bottom: 20px; }
+        .preloader-logo svg { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        .logo-base { fill: #222; }
+        .logo-fill { fill: var(--marathon-yellow); clip-path: inset(0 100% 0 0); animation: fillRight 1s linear forwards; }
+        @keyframes fillRight { 100% { clip-path: inset(0 0 0 0); } }
+        .preloader-text { font-family: var(--font-tech); color: var(--marathon-yellow); font-size: 0.9rem; letter-spacing: 2px; }
+
         ::selection { background: var(--marathon-yellow); color: #000; }
 
         @media (pointer: fine) {
@@ -127,7 +141,7 @@
         .tech-data { 
             font-size: clamp(0.75rem, 1vw, 0.9rem); 
             color: var(--text-muted); letter-spacing: 2px; 
-            display: flex; gap: 10px 20px; flex-wrap: wrap; 
+            display: flex; gap: 10px 20px; flex-wrap: wrap; align-items: center;
         }
         .tech-data span { color: var(--marathon-yellow); }
 
@@ -137,10 +151,14 @@
             padding: 0 30px; background: rgba(3, 3, 3, 0.85);
             backdrop-filter: blur(8px); z-index: 100;
         }
+        .hud-nav-left {
+            display: flex; align-items: center; gap: 30px;
+        }
         .hud-nav .small-logo svg { height: 30px; fill: var(--marathon-yellow); }
         .hud-links { display: flex; gap: 30px; font-size: 0.8rem; }
         .hud-links a { color: var(--text-main); text-decoration: none; padding: 5px; }
         .hud-links a:hover { color: var(--marathon-yellow); }
+        .hud-links .store-link { color: var(--marathon-yellow); font-weight: bold; border-bottom: 1px solid var(--marathon-yellow); }
 
         .side-data {
             position: fixed; right: 0; top: 60px; height: calc(100vh - 60px); width: 50px;
@@ -167,15 +185,15 @@
         .section-id { font-size: 1rem; color: var(--text-muted); margin-bottom: 5px; }
         .grid-split { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; position: relative; width: 100%; }
 
-        .img-wrapper { position: relative; border: 1px solid #333; padding: 10px; width: 100%; height: 100%; display: flex; align-items: stretch; }
-        .img-wrapper img {
+        .img-wrapper { position: relative; border: 1px solid #333; padding: 10px; width: 100%; height: 100%; display: flex; align-items: stretch; background: #050505; }
+        .img-wrapper img, .img-wrapper video {
             width: 100%; height: 100%; object-fit: cover; display: block; max-width: 100%;
             filter: grayscale(100%) contrast(1.2) brightness(0.7);
             transition: filter 0.8s ease-in-out; 
         }
-        .img-wrapper:hover img { filter: grayscale(100%) contrast(1.5) sepia(100%) hue-rotate(20deg) saturate(300%) brightness(0.9); }
+        .img-wrapper:hover img, .img-wrapper:hover video { filter: grayscale(100%) contrast(1.5) sepia(100%) hue-rotate(20deg) saturate(300%) brightness(0.9); }
         
-        .corner { position: absolute; width: 15px; height: 15px; border: 2px solid var(--marathon-yellow); }
+        .corner { position: absolute; width: 15px; height: 15px; border: 2px solid var(--marathon-yellow); z-index: 5; }
         .corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
         .corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
         .corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
@@ -199,7 +217,7 @@
         }
 
         ul.data-list { list-style: none; }
-        ul.data-list li { position: relative; padding-left: 30px; margin-bottom: 15px; font-size: clamp(1.05rem, 1.2vw + 0.5rem, 1.25rem); color: #aaa; line-height: 1.6; }
+        ul.data-list li { position: relative; padding-left: 30px; margin-bottom: 10px; font-size: clamp(1.05rem, 1.2vw + 0.5rem, 1.25rem); color: #aaa; line-height: 1.6; }
         ul.data-list li::before { content: '>'; position: absolute; left: 0; color: var(--marathon-yellow); font-weight: bold; }
 
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #333; border: 1px solid #333; width: 100%; }
@@ -221,60 +239,23 @@
         .reveal.active { opacity: 1; transform: translateY(0); }
 
         .custom-context-menu {
-            position: fixed;
-            background-color: #0a0a0a; /* <-- TŁO MENU (teraz ciemne) */
-            border: 1px solid #333; /* Subtelna ramka wokół */
-            color: var(--text-main);
-            border-radius: 10px; /* Nieco ostrzejsze rogi w stylu gry */
-            padding: 15px 0;
-            min-width: 220px;
-            z-index: 100000;
-            display: none;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
-            font-family: var(--font-tech); /* Zmiana na techniczny font */
-            font-weight: 700;
-            text-transform: lowercase;
-            opacity: 0;
-            transform: scale(0.95);
-            transition: opacity 0.15s ease, transform 0.15s ease;
+            position: fixed; background-color: #0a0a0a; border: 1px solid #333; color: var(--text-main);
+            border-radius: 10px; padding: 15px 0; min-width: 220px; z-index: 100000; display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9); font-family: var(--font-tech); font-weight: 700;
+            text-transform: lowercase; opacity: 0; transform: scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease;
         }
-        .custom-context-menu.show {
-            display: block;
-            opacity: 1;
-            transform: scale(1);
-        }
+        .custom-context-menu.show { display: block; opacity: 1; transform: scale(1); }
         .custom-context-menu::before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: -6px;
-            width: 12px;
-            height: 12px;
-            background: var(--marathon-yellow); /* <-- KROPKA (teraz żółta) */
-            border-radius: 50%;
+            content: ''; position: absolute; top: 20px; left: -6px; width: 12px; height: 12px;
+            background: var(--marathon-yellow); border-radius: 50%;
         }
         .custom-context-menu a {
-            display: block;
-            padding: 12px 25px;
-            color: #ccc; /* <-- KOLOR TEKSTU */
-            text-decoration: none;
-            font-size: 0.95rem;
-            position: relative;
-            transition: all 0.2s;
+            display: block; padding: 12px 25px; color: #ccc; text-decoration: none; font-size: 0.95rem;
+            position: relative; transition: all 0.2s;
         }
-        .custom-context-menu a:hover {
-            background-color: #111; /* <-- TŁO PO NAJECHANIU MYSZKĄ */
-            color: var(--marathon-yellow); /* <-- TEKST PO NAJECHANIU (żółty) */
-            padding-left: 35px; /* Fajny efekt przesunięcia tekstu */
-        }
+        .custom-context-menu a:hover { background-color: #111; color: var(--marathon-yellow); padding-left: 35px; }
         .custom-context-menu a:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 25px;
-            right: 25px;
-            height: 1px;
-            background-color: #222; /* <-- KOLOR LINII ODDZIELAJĄCEJ */
+            content: ''; position: absolute; bottom: 0; left: 25px; right: 25px; height: 1px; background-color: #222;
         }
 
         @media(max-width: 1024px) {
@@ -287,7 +268,8 @@
             section, footer { padding: 80px 20px 80px 20px; }
             .hero { padding: 120px 20px 60px 20px; }
             .hud-nav { padding: 0 15px; }
-            .hud-links { display: none; }
+            .hud-nav-left { gap: 15px; } 
+            .hud-links a:not(.store-link) { display: none; } /* Zostawia widoczny tylko element z klasą .store-link */
             .stats-grid { grid-template-columns: 1fr; }
             .big-links a { width: 100%; text-align: center; }
             .text-block { padding: 30px 20px; }
@@ -296,34 +278,48 @@
 </head>
 <body>
 
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="preloader-logo">
+            <svg class="logo-base" viewBox="0 0 546 381">
+                <path d="M0,108.86l54.6,54.43H0v217.71h54.6v-217.71l54.6,54.43h109.29v-54.43H54.6V54.43h436.8v108.86h-163.89v54.43h109.29l54.6-54.43v217.71h54.6v-217.71h-54.6l54.6-54.43v-54.43L491.4,0H54.6L0,54.43v54.43Z"/>
+            </svg>
+            <svg class="logo-fill" viewBox="0 0 546 381">
+                <path d="M0,108.86l54.6,54.43H0v217.71h54.6v-217.71l54.6,54.43h109.29v-54.43H54.6V54.43h436.8v108.86h-163.89v54.43h109.29l54.6-54.43v217.71h54.6v-217.71h-54.6l54.6-54.43v-54.43L491.4,0H54.6L0,54.43v54.43Z"/>
+            </svg>
+        </div>
+        <div class="preloader-text" id="preloader-text">INITIALIZING SYSTEM...</div>
+    </div>
+
     <div id="custom-cursor" class="custom-cursor">
-        <div class="cursor-corner tl"></div>
-        <div class="cursor-corner tr"></div>
-        <div class="cursor-corner bl"></div>
-        <div class="cursor-corner br"></div>
+        <div class="cursor-corner tl"></div><div class="cursor-corner tr"></div>
+        <div class="cursor-corner bl"></div><div class="cursor-corner br"></div>
         <div class="cursor-label"></div>
     </div>
 
-   <div id="custom-context-menu" class="custom-context-menu">
+    <div id="custom-context-menu" class="custom-context-menu">
         <a href="https://www.facebook.com/DJ.FoGGy.Official" target="_blank">facebook</a>
-        <a href="https://www.instagram.com/foggy_dj" target="_blank">ig foggy</a>
-        <a href="https://www.instagram.com/eligucio_blog" target="_blank">ig eligucio</a>
+        <a href="https://www.instagram.com/foggy_dj" target="_blank">INSTAGRAM</a>
         <a href="https://www.youtube.com/@foggy_dj" target="_blank">youtube</a>
         <a href="https://www.tiktok.com/@foggy_dj" target="_blank">tiktok</a>
         <a href="https://soundcloud.com/foggy_dj" target="_blank">soundcloud</a>
     </div>
 
     <nav class="hud-nav">
-        <a href="#" class="small-logo snappy">
-            <svg viewBox="0 0 546 381">
-                <path d="M0,108.86l54.6,54.43H0v217.71h54.6v-217.71l54.6,54.43h109.29v-54.43H54.6V54.43h436.8v108.86h-163.89v54.43h109.29l54.6-54.43v217.71h54.6v-217.71h-54.6l54.6-54.43v-54.43L491.4,0H54.6L0,54.43v54.43Z"/>
-            </svg>
-        </a>
-        <div class="tech-data">
-            <div>SYS.VER <span>1.0.5</span></div>
-            <div class="status-dot"></div>
+        <div class="hud-nav-left">
+            <a href="#" class="small-logo snappy">
+                <svg viewBox="0 0 546 381">
+                    <path d="M0,108.86l54.6,54.43H0v217.71h54.6v-217.71l54.6,54.43h109.29v-54.43H54.6V54.43h436.8v108.86h-163.89v54.43h109.29l54.6-54.43v217.71h54.6v-217.71h-54.6l54.6-54.43v-54.43L491.4,0H54.6L0,54.43v54.43Z"/>
+                </svg>
+            </a>
+            <div class="tech-data">
+                <div>SYS.VER <span>1.0.5</span></div>
+                <div class="status-dot"></div>
+            </div>
         </div>
+        
         <div class="hud-links">
+            <a href="store.html" class="snappy store-link">STORE</a>
             <a href="https://www.instagram.com/foggy_dj" target="_blank" class="snappy">INSTAGRAM</a>
             <a href="https://www.tiktok.com/@foggy_dj" target="_blank" class="snappy">TIKTOK</a>
             <a href="https://www.youtube.com/@foggy_dj" target="_blank" class="snappy">YOUTUBE</a>
@@ -364,8 +360,8 @@
             </div>
 
             <div class="hero-sub">
-                GUSTAW JEZIERSKI <br>
-                <span style="color: var(--text-muted); font-size: 0.6em; font-family: var(--font-tech);">#BALCONYBOY_PROTOCOL</span>
+                <strong style="font-weight: 700;">GUSTAW JEZIERSKI</strong> <br>
+                <span style="color: var(--text-muted); font-size: 0.6em; font-family: var(--font-tech); font-weight: 400;">#BALCONYBOY_PROTOCOL</span>
             </div>
         </header>
 
@@ -377,19 +373,19 @@
             <div class="grid-split">
                 <div class="text-block">
                     <div class="tech-data" style="margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                        OPERATIVE: <span>GUSTAW JEZIERSKI</span> LOC: <span>RADOM, PL</span> AGE: <span>21</span>
+                        OPERATIVE: <span>GUSTAW JEZIERSKI</span> LOC: <span>PL</span> AGE: <span>23</span>
                     </div>
-                    <p>Cześć! Studiuję Zarządzanie, a od 2020 roku moją największą pasją jest muzyka i branża <span class="highlight-yellow">DJ TechStruction</span>.</p>
-                    <p>Lubię grać w nietypowych przestrzeniach publicznych – tam, gdzie nikt nie spodziewa się DJ-a. Chcę rozszerzyć świadomość Polaków na temat muzyki elektronicznej, a czym to robić lepiej, niż unikalnym i zaskakującym typem show?</p>
+                    <p>FoGGy to selekcja, energia i kontrola momentu. Buduję sety na napięciu i świadomej selekcji, gdzie bas prowadzi całość, a każdy element ma swoje miejsce. Nie chodzi o dopasowanie się, tylko o stworzenie realnego połączenia i momentu, który naprawdę działa. Bez zbędnej narracji i udawania.</p>
+                    <p>Liczy się feeling, flow i to, co dzieje się między dźwiękiem a ludźmi. Każdy set traktuję jak proces, który ma zostawić coś więcej niż tylko wspomnienie.</p>
+                    <p>Muzyka to dla mnie mechanizm, w którym precyzja spotyka się z nieprzewidywalnością tłumu. Skupiam się na surowych brzmieniach, ciężkiej stopie i industrialnych teksturach, które rezonują z miejską tkanką. Każde przejście to wyliczona reakcja łańcuchowa, mająca na celu utrzymanie maksymalnego poziomu immersji. Nie ma tu miejsca na przypadkowe dźwięki – to matematyka połączona z czystą adrenaliną.</p>
                     
                     <div class="b2b-alert snappy" style="margin-top: 20px;">
-                        <span style="color: var(--text-muted); font-size: 0.9em; display: block; margin-bottom: 10px;">WIZJA 2025 // OVERRIDE</span>
-                        FoGGy planuje zagrać w największych miastach w Polsce na Balkonach. Przygotowane zaplecze sprzętowe, zespół designerów-techników, plan występów oraz pasja do tworzenia SHOW.
+                        ,,Built on feeling. Driven by bass.''
                     </div>
                 </div>
                 <div class="img-wrapper snappy">
                     <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-                    <img src="zdj-bio.jpg" alt="Gustaw FoGGy Jezierski">
+                    <video src="omnie.mp4" autoplay loop muted playsinline disablePictureInPicture></video>
                     <div class="crosshair" style="top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.5;"></div>
                 </div>
             </div>
@@ -403,18 +399,25 @@
             <div class="grid-split">
                 <div class="img-wrapper snappy">
                     <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-                    <img src="zdj-akcja1.jpg" alt="Projekt Balcony Boy">
+                    <video src="balcony.mp4" autoplay loop muted playsinline disablePictureInPicture></video>
                 </div>
                 <div class="text-block">
-                    <p>Projekt <span class="highlight-yellow">#BalconyBoy</span> to unikalne, miejskie show DJ-skie grane z balkonów i nietypowych lokalizacji w miastach Polski. Łączy muzykę elektroniczną z miejskim klimatem, tworząc niezapomniane wizualne i dźwiękowe doświadczenie.</p>
-                    <p style="color: var(--text-muted);">ZANOTOWANE STREFY ZAKOŃCZONYCH OPERACJI:<br> 
-                    <span class="highlight-yellow">RADOM, KIELCE, CZĘSTOCHOWA, LUBLIN.</span></p>
+                    <p>Projekt <span class="highlight-yellow">#BalconyBoy</span> to miejska forma DJ show, która przenosi muzykę poza oczywiste miejsca. Od 2023 roku rozwijany jako jeden z prekursorów tego formatu na rynku.</p>
+                    <p>Sety pojawiają się tam, gdzie nikt się ich nie spodziewa, opierając się na charakterystycznym, cięższym brzmieniu i selekcji budującej napięcie. To połączenie surowego klimatu miasta, energii i dźwięku, który realnie wpływa na przestrzeń i ludzi.</p>
+                    <p>Zamieniamy balkony, dachy i opuszczone tarasy w pełnoprawne platformy nadawcze, łamiąc schematy tradycyjnych klubów. Miasto staje się naszym tłem, a ulica naturalnym parkietem. Każda lokalizacja jest unikalna, co sprawia, że żadne wydarzenie się nie powtarza. Ingerujemy w miejską codzienność, zaskakując przechodniów i zapraszając ich do wspólnego przeżywania dźwięku w najmniej oczekiwanym momencie.</p>
                     
-                    <ul class="data-list" style="margin-top: 30px;">
-                        <li>Zabezpieczone lokalizacje w wielu polskich miastach</li>
-                        <li>Sprzęt muzyczny dostosowany do kompaktowych przestrzeni</li>
-                        <li>Technik na miejscu do obsługi wydarzenia</li>
-                        <li>Designerzy odpowiedzialni za identyfikację wizualną</li>
+                    <p class="highlight-yellow" style="margin-bottom: 10px; margin-top: 10px;">ZANOTOWANE OBSZARY DZIAŁANIA:</p> 
+                    <ul class="data-list" style="margin-top: 10px;"> 
+                        <li>Częstochowa</li>
+                        <li>Katowice</li>
+                        <li>Kielce</li>
+                        <li>Lublin</li>
+                        <li>Łódź</li>
+                        <li>New York</li>
+                        <li>Piotrków Tryb.</li>
+                        <li>Poznań</li>
+                        <li>Radom</li>
+                        <li>Warszawa</li>
                     </ul>
                 </div>
             </div>
@@ -429,53 +432,19 @@
             <div class="stats-grid">
                 <div class="stat-item snappy">
                     <div class="stat-num">1M+</div>
-                    <div class="stat-desc">WYŚWIETLEŃ (23/24) #BALCONYBOY</div>
+                    <div class="stat-desc">WYŚWIETLEŃ #BALCONYBOY</div>
                 </div>
                 <div class="stat-item snappy">
                     <div class="stat-num">500K+</div>
                     <div class="stat-desc">ZASIĘGU ORGANICZNEGO W SOCIALACH</div>
                 </div>
                 <div class="stat-item snappy">
-                    <div class="stat-num">4M+</div>
-                    <div class="stat-desc">WYŚWIETLEŃ NA RYNKU PERSKIM (@eligucio_blog_)</div>
+                    <div class="stat-num">20</div>
+                    <div class="stat-desc">ZAGRANYCH KONCERTÓW</div>
                 </div>
                 <div class="stat-item snappy">
-                    <div class="stat-num">9K+</div>
-                    <div class="stat-desc">FOLLOWERSÓW ZBUDOWANYCH OD ZERA (1 ROK)</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="reveal" data-cursor="cursor-scan">
-            <div class="section-header">
-                <div class="section-id">04.</div>
-                <h2 class="section-title"><span class="matrix-text" data-value="B2B / LOGISTYKA">B2B / LOGISTYKA</span></h2>
-            </div>
-            <div class="grid-split">
-                <div class="text-block">
-                    <div class="b2b-alert snappy">
-                        Szukam partnera, który wesprze mój projekt finansowo i wizerunkowo. Projekt rusza latem 2025.
-                    </div>
-                    
-                    <h3>WYMAGANE WSPARCIE:</h3>
-                    <ul class="data-list" style="margin-bottom: 30px;">
-                        <li>Transport (Radom -> inne miasta, przewóz sprzętu)</li>
-                        <li>Noclegi i ewentualne koszty lokalne</li>
-                        <li>Produkcja materiałów audiowizualnych</li>
-                        <li>Produkty promocyjne z brandingiem partnera</li>
-                    </ul>
-
-                    <h3 style="color: var(--marathon-yellow);">WYMIANA / OFERTA:</h3>
-                    <ul class="data-list">
-                        <li>Interaktywne działania z publiką</li>
-                        <li>Promocja partnera w moich kanałach (+ rynek perski)</li>
-                        <li>Logo w materiałach wideo, serii #Weekly i na stronie</li>
-                        <li>Dedykowane nagrania/showcase z oznaczeniami partnera</li>
-                    </ul>
-                </div>
-                <div class="img-wrapper snappy">
-                    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-                    <img src="zdj-akcja2.jpg" alt="Tłum i akcja DJ">
+                    <div class="stat-num">11</div>
+                    <div class="stat-desc">ODWIEDZONYCH MIAST PODCZAS TRASY #BALCONYBOY</div>
                 </div>
             </div>
         </section>
@@ -484,15 +453,15 @@
             <div class="crosshair" style="top: 20px; left: 20px;"></div>
             <div class="crosshair" style="top: 20px; right: 20px;"></div>
             
-            <h2 class="footer-title">ZBUDUJMY TO RAZEM</h2>
+            <h2 class="footer-title">#FROMTHEFOGWERISE</h2>
             
             <div class="big-links">
                 <a href="https://www.facebook.com/DJ.FoGGy.Official" target="_blank" class="snappy">FACEBOOK</a>
-                <a href="https://www.instagram.com/foggy_dj" target="_blank" class="snappy">IG FOGGY</a>
-                <a href="https://www.instagram.com/eligucio_blog_/" target="_blank" class="snappy">IG ELIGUCIO</a>
+                <a href="https://www.instagram.com/foggy_dj" target="_blank" class="snappy">INSTAGRAM</a>
                 <a href="https://www.youtube.com/@foggy_dj" target="_blank" class="snappy">YOUTUBE</a>
                 <a href="https://www.tiktok.com/@foggy_dj" target="_blank" class="snappy">TIKTOK</a>
                 <a href="https://soundcloud.com/foggy_dj" target="_blank" class="snappy">SOUNDCLOUD</a>
+                <a href="https://open.spotify.com/artist/1AQRJPiVB8j4ZZszn84t9w?si=bMQ1qomXT7-TKURHYIJN6g" target="_blank" class="snappy">SPOTIFY</a>
             </div>
             
             <div style="margin-top: 80px; font-size: 0.9rem; color: var(--text-muted); border-top: 1px solid #222; padding-top: 20px;">
@@ -508,6 +477,30 @@
     </main>
 
     <script>
+        // Logika preloadera
+        document.addEventListener("DOMContentLoaded", () => {
+            const preloader = document.getElementById('preloader');
+            const preloaderText = document.getElementById('preloader-text');
+            const originalText = "INITIALIZING SYSTEM...";
+            const matrixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
+            
+            let loaderInterval = setInterval(() => {
+                preloaderText.innerText = originalText.split('').map(c => {
+                    if(c === ' ') return ' ';
+                    return matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                }).join('');
+            }, 50);
+
+            setTimeout(() => {
+                clearInterval(loaderInterval);
+                preloaderText.innerText = "SYSTEM_READY // ACCESS_GRANTED";
+                setTimeout(() => {
+                    preloader.style.opacity = '0';
+                    setTimeout(() => { preloader.style.display = 'none'; }, 500);
+                }, 300);
+            }, 1000);
+        });
+
         document.querySelectorAll('.text-block p, .data-list li').forEach(el => {
             let newHtml = '';
             el.childNodes.forEach(node => {

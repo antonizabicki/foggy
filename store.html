@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoGGy // STORE</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 546 381'%3E%3Cpath fill='%23feed01' d='M0,108.86l54.6,54.43H0v217.71h54.6v-217.71l54.6,54.43h109.29v-54.43H54.6V54.43h436.8v108.86h-163.89v54.43h109.29l54.6-54.43v217.71h54.6v-217.71h-54.6l54.6-54.43v-54.43L491.4,0H54.6L0,54.43v54.43Z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #030303;
+            --text-main: #f0f0f0;
+            --marathon-yellow: #feed01; 
+            --font-display: 'Syncopate', sans-serif;
+            --font-tech: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-tech);
+            text-transform: uppercase;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body::before {
+            content: ""; position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2; pointer-events: none;
+        }
+
+        body::after {
+            content: " "; display: block; position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
+            z-index: 999; background-size: 100% 4px;
+            pointer-events: none; opacity: 0.6;
+        }
+
+        .bg-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, rgba(254, 237, 1, 0.05) 0%, transparent 60%);
+            z-index: -1; pointer-events: none;
+        }
+
+        .store-logo { width: 100%; max-width: 700px; margin-bottom: 30px; padding: 0 20px; }
+        .store-logo svg { width: 100%; height: auto; fill: var(--marathon-yellow); filter: drop-shadow(0 0 10px rgba(254, 237, 1, 0.3)); display: block; }
+        
+        .coming-soon { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem); color: #fff; margin-bottom: 50px; text-align: center; letter-spacing: 2px; }
+        
+        .back-btn { 
+            padding: 15px 40px; border: 1px solid #333; color: var(--text-main); 
+            text-decoration: none; font-size: 1.1rem; transition: all 0.3s; 
+            background: transparent; z-index: 10; cursor: pointer;
+        }
+        .back-btn:hover { border-color: var(--marathon-yellow); background: var(--marathon-yellow); color: #000; font-weight: bold; }
+
+        /* Crosshairs dla estetyki */
+        .crosshair { position: absolute; width: 15px; height: 15px; }
+        .crosshair::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--marathon-yellow); }
+        .crosshair::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: var(--marathon-yellow); }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="crosshair" style="top: 20px; left: 20px;"></div>
+    <div class="crosshair" style="top: 20px; right: 20px;"></div>
+    <div class="crosshair" style="bottom: 20px; left: 20px;"></div>
+    <div class="crosshair" style="bottom: 20px; right: 20px;"></div>
+
+    <div class="store-logo">
+        <svg viewBox="0 0 1000.13 346.13">
+            <polygon points="76.92 153.99 153.91 153.99 153.91 115.53 38.46 115.53 76.92 153.99"/>
+            <polygon points="192.3 38.61 192.3 .15 38.46 .15 0 38.61 0 77.07 38.46 115.53 38.46 38.61 192.3 38.61"/>
+            <rect y="115.53" width="38.46" height="153.84"/>
+            <path d="M211.6,77.4l-38.46,38.46v115.38l38.46,38.46h115.38l38.46-38.46v-115.38l-38.46-38.46h-115.38ZM326.98,231.25h-115.38v-115.38h115.38v115.38Z"/>
+            <polygon points="461.59 115.38 461.59 153.84 538.52 153.84 500.06 115.38 461.59 115.38"/>
+            <polygon points="423.13 0 384.67 38.46 384.67 230.77 423.13 269.23 538.52 269.23 576.98 230.77 576.98 192.3 538.52 153.84 538.52 230.77 423.13 230.77 423.13 38.46 538.52 38.46 538.52 76.92 576.98 76.92 576.98 38.46 538.52 0 423.13 0"/>
+            <polygon points="634.67 0 596.21 38.46 596.21 230.77 634.67 269.23 750.05 269.23 788.51 230.77 788.51 192.3 750.05 153.84 750.05 230.77 634.67 230.77 634.67 38.46 750.05 38.46 750.05 76.92 788.51 76.92 788.51 38.46 750.05 0 634.67 0"/>
+            <polygon points="673.13 115.38 673.13 153.84 750.05 153.84 711.59 115.38 673.13 115.38"/>
+            <rect x="961.67" y="76.9" width="38.46" height="192.3"/>
+            <polygon points="846.29 230.75 884.75 269.21 961.67 269.21 923.21 230.75 846.29 230.75"/>
+            <polygon points="807.83 307.67 807.83 346.13 961.67 346.13 1000.13 307.67 961.67 269.21 961.67 307.67 807.83 307.67"/>
+            <polygon points="807.83 76.9 807.83 192.29 846.29 230.75 846.29 76.9 807.83 76.9"/>
+        </svg>
+    </div>
+
+    <h1 class="coming-soon matrix-text" data-value="COMING SOON">COMING SOON</h1>
+    
+    <a href="index.html" class="back-btn">WRÓĆ</a>
+
+    <script>
+        const matrixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
+        document.querySelectorAll('.matrix-text').forEach(el => {
+            el.addEventListener('mouseenter', e => {
+                let iterations = 0;
+                const originalText = e.target.dataset.value;
+                clearInterval(e.target.matrixInterval);
+                
+                e.target.matrixInterval = setInterval(() => {
+                    e.target.innerText = originalText.split('')
+                        .map((letter, index) => {
+                            if(index < iterations) return originalText[index];
+                            if(originalText[index] === ' ') return ' ';
+                            return matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                        }).join('');
+                    
+                    if(iterations >= originalText.length) {
+                        clearInterval(e.target.matrixInterval);
+                        e.target.innerText = originalText;
+                    }
+                    iterations += 0.5;
+                }, 30);
+            });
+        });
+    </script>
+</body>
+</html>
