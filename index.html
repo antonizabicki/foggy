@@ -25,7 +25,7 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        html { overflow-x: hidden; }
+        html { overflow-x: clip; }
         
         body {
             background-color: var(--bg-color);
@@ -34,7 +34,7 @@
             line-height: 1.5;
             text-transform: uppercase;
             width: 100%;
-            overflow-x: hidden;
+            overflow-x: clip;
         }
 
         ::-webkit-scrollbar { width: 8px; }
@@ -60,7 +60,6 @@
             pointer-events: none; opacity: 0.6;
         }
 
-        /* Ekran ładowania (Preloader) */
         #preloader {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: var(--bg-color); z-index: 999999;
@@ -269,7 +268,7 @@
             .hero { padding: 120px 20px 60px 20px; }
             .hud-nav { padding: 0 15px; }
             .hud-nav-left { gap: 15px; } 
-            .hud-links a:not(.store-link) { display: none; } /* Zostawia widoczny tylko element z klasą .store-link */
+            .hud-links a:not(.store-link) { display: none; }
             .stats-grid { grid-template-columns: 1fr; }
             .big-links a { width: 100%; text-align: center; }
             .text-block { padding: 30px 20px; }
@@ -278,7 +277,6 @@
 </head>
 <body>
 
-    <!-- PRELOADER -->
     <div id="preloader">
         <div class="preloader-logo">
             <svg class="logo-base" viewBox="0 0 546 381">
@@ -477,7 +475,6 @@
     </main>
 
     <script>
-        // Logika preloadera
         document.addEventListener("DOMContentLoaded", () => {
             const preloader = document.getElementById('preloader');
             const preloaderText = document.getElementById('preloader-text');
