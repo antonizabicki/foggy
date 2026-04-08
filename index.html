@@ -2,7 +2,10 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Poprawka 2: viewport-fit=cover i theme-color łatające prześwitujący pasek powiadomień na telefonach -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#030303">
+    
     <title>FoGGy // SYSTEM_INIT</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 546 381'%3E%3Cpath fill='%23feed01' d='M0,108.86l54.6,54.43H0v217.71h54.6v-217.71l54.6,54.43h109.29v-54.43H54.6V54.43h436.8v108.86h-163.89v54.43h109.29l54.6-54.43v217.71h54.6v-217.71h-54.6l54.6-54.43v-54.43L491.4,0H54.6L0,54.43v54.43Z'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,11 +147,16 @@
         }
         .tech-data span { color: var(--marathon-yellow); }
 
+        /* Poprawka 2: Rozszerzenie paska na obszar systemowy */
         .hud-nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            position: fixed; top: 0; left: 0; width: 100%; 
+            height: calc(60px + env(safe-area-inset-top, 0px));
+            padding: env(safe-area-inset-top, 0px) 30px 0 30px;
             border-bottom: var(--border-thin); display: flex; justify-content: space-between; align-items: center;
-            padding: 0 30px; background: rgba(3, 3, 3, 0.85);
-            backdrop-filter: blur(8px); z-index: 100;
+            background: rgba(3, 3, 3, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px); /* Lepsze wsparcie dla iOS */
+            z-index: 100;
         }
         .hud-nav-left {
             display: flex; align-items: center; gap: 30px;
@@ -228,7 +236,18 @@
         .b2b-alert { border: 1px solid var(--marathon-yellow); background: rgba(254, 237, 1, 0.05); padding: 25px; margin-bottom: 30px; width: 100%; font-size: clamp(1.05rem, 1.2vw + 0.5rem, 1.25rem); line-height: 1.6; }
 
         footer { border-top: 5px solid var(--marathon-yellow); padding: 100px 50px; text-align: center; background: #050505; position: relative; width: 100%; overflow: hidden; }
-        .footer-title { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem); color: var(--text-main); margin-bottom: 50px; }
+        
+        /* Poprawka 1: Zabezpieczenie przez ucinającym się tekstem #FROMTHEFOG... */
+        .footer-title { 
+            font-family: var(--font-display); 
+            font-size: clamp(1rem, 4.5vw, 4rem); 
+            color: var(--text-main); 
+            margin-bottom: 50px;
+            width: 100%;
+            word-break: break-word; 
+            overflow-wrap: anywhere;
+        }
+
         .big-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; width: 100%; }
         .big-links a { padding: 15px 30px; border: 1px solid #333; color: var(--text-main); text-decoration: none; transition: all 0.3s; display: inline-block; }
         .big-links a:hover { border-color: var(--marathon-yellow); background: var(--marathon-yellow); color: #000; font-weight: bold; }
@@ -266,12 +285,21 @@
             .side-data { display: none; }
             section, footer { padding: 80px 20px 80px 20px; }
             .hero { padding: 120px 20px 60px 20px; }
-            .hud-nav { padding: 0 15px; }
+            
+            /* Poprawka paddingu do nawigacji dla mobile */
+            .hud-nav { padding: env(safe-area-inset-top, 0px) 15px 0 15px; }
+            
             .hud-nav-left { gap: 15px; } 
             .hud-links a:not(.store-link) { display: none; }
             .stats-grid { grid-template-columns: 1fr; }
             .big-links a { width: 100%; text-align: center; }
             .text-block { padding: 30px 20px; }
+
+            /* Ekstra wsparcie mniejszego fonta + łamania linii dla bardzo małych ekranów */
+            .footer-title {
+                font-size: clamp(1.2rem, 5.5vw, 2.5rem);
+                word-break: break-all;
+            }
         }
     </style>
 </head>
